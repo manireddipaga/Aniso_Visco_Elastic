@@ -1,0 +1,263 @@
+%% Hybrid Model (GST Dissipation + AI Potential)
+
+% clear
+% close all
+% clc
+function obj=gst_model(x)
+%% Experimental Data
+load 30percent_parallel.mat  per3010 per301 per3001 per30001
+load time.mat time1 time2 time3 time4
+load khat.mat khat
+load kbardata.mat kbardata
+% figure()
+% plot(per3010(:,1),per3010(:,2),'r',LineWidth=2)
+% hold on
+% plot(per301(:,1),per301(:,2),'g',LineWidth=2)
+% plot(per3001(:,1),per3001(:,2),'b',LineWidth=2)
+% plot(per30001(:,1),per30001(:,2),'m',LineWidth=2)
+% hold off
+% xlabel('\lambda -1')
+% ylabel('\sigma')
+% legend('10%','1%',"0.1%",'0.01%')
+%% Parameters
+% mu01        =   x(1);
+% mu02        =   x(2);
+% mu03        =   x(3);
+% mu04        =   x(4);
+% mu1         =   x(5);
+% mu2         =   x(6);
+% b01         =   x(7);
+% b02         =   x(8);
+% b03         =   x(9);
+% b04         =   x(10);
+% b1          =   x(11);
+% b2          =   x(12);
+% mu04        =   x(1);
+% mu1         =   x(2);
+% mu2         =   x(3);
+% b04         =   x(4);
+% b1          =   x(5);
+% b2          =   x(6);
+% parameters1  =   [mu01,mu1,mu2,b01,b1,b2];
+% parameters2  =   [mu02,mu1,mu2,b02,b1,b2];
+% parameters3  =   [mu03,mu1,mu2,b03,b1,b2];
+% parameters4  =   [mu04,mu1,mu2,b04,b1,b2];
+%%
+% mu01        =   x(1);
+% mu02        =   x(2);
+% mu03        =   x(3);
+% mu1         =   x(4);
+% mu2         =   x(5);
+% b01         =   x(6);
+% b02         =   x(7);
+% b03         =   x(8);
+% b1          =   x(9);
+% b2          =   x(10);
+% parameters1  =   [mu01,mu1,mu2,b01,b1,b2];
+% parameters2  =   [mu02,mu1,mu2,b02,b1,b2];
+% parameters3  =   [mu03,mu1,mu2,b03,b1,b2];
+%%
+% mu01        =   x(1);
+% mu02        =   x(2);
+% mu1         =   x(3);
+% mu2         =   x(4);
+% b01         =   x(5);
+% b02         =   x(6);
+% b1          =   x(7);
+% b2          =   x(8);
+% parameters1  =   [mu01,mu1,mu2,b01,b1,b2];
+% parameters2  =   [mu02,mu1,mu2,b02,b1,b2];
+%%
+% mu0          =   x(1);
+% mu11         =   x(2);
+% mu12         =   x(3);
+% mu2          =   x(4);
+% b01          =   x(5);
+% b02          =   x(6);
+% b1           =   x(7);
+% b2           =   x(8);
+% parameters1  =   [mu0,mu11,mu2,b01,b1,b2];
+% parameters2  =   [mu0,mu12,mu2,b02,b1,b2];
+%%
+% mu0          =   x(1);
+% mu1          =   x(2);
+% mu2          =   x(3);
+% b01          =   x(4);
+% b02          =   x(5);
+% b1           =   x(6);
+% b2           =   x(7);
+% parameters1  =   [mu0,mu1,mu2,b01,b1,b2];
+% parameters2  =   [mu0,mu1,mu2,b02,b1,b2];
+%%
+% mu01          =   x(1);
+% mu02          =   x(2);
+% mu1          =   x(3);
+% mu2          =   x(4);
+% b01          =   x(5);
+% b02          =   x(6);
+% b1           =   x(7);
+% b2           =   x(7);
+% parameters1  =   [mu0,mu1,mu2,b01,b1,b2];
+% parameters2  =   [mu0,mu1,mu2,b02,b1,b2];
+%%
+
+%% Stretch and Stretch Rate
+
+lda1        =    @(t) 0.335793E1+(-0.1E0).*t+(-0.133333E-1).*log(0.1E1+ ...
+  0.634852E77.*0.2718281828459045E1.^((-0.15E2).*t));
+dlda1       = @(t) (0.634852E76+(-0.1E0).*exp(1).^(0.15E2.*t)).*(0.634852E77+ ...
+  0.1E1.*exp(1).^(0.15E2.*t)).^(-1);
+
+lda2        =   @(t) 0.333786E1+(-0.1E-1).*t+(-0.4E-1).*log(0.1E1+0.241568E26.* ...
+  0.2718281828459045E1.^((-0.5E0).*t));
+
+dlda2       =   @(t) 0.333786E1+(-0.1E-1).*t+(-0.4E-1).*log(0.1E1+0.241568E26.* ...
+  exp(1).^((-0.5E0).*t));
+
+lda3        =   @(t) 0.337955E1+(-0.1E-2).*t+(-0.333333E-1).*log(0.1E1+ ...
+  0.100627E32.*0.2718281828459045E1.^((-0.6E-1).*t));
+dlda3       =   @(t) (0.100627E29+(-0.1E-2).*exp(1).^(0.6E-1.*t)).*(0.100627E32+ ...
+  0.1E1.*exp(1).^(0.6E-1.*t)).^(-1);
+lda4        =   @(t) 0.327491E1+(-0.1E-3).*t+(-0.2E-1).*log(0.1E1+0.250655E50.* ...
+  0.2718281828459045E1.^((-0.1E-1).*t));
+dlda4       =   @(t) (0.250655E46+(-0.1E-3).*exp(1).^(0.1E-1.*t)).*(0.250655E50+ ...
+  0.1E1.*exp(1).^(0.1E-1.*t)).^(-1);
+
+
+% figure()
+% subplot(2,2,1)
+% fplot(lda1,[0 time1(end)])
+% xlabel('t(s)')
+% ylabel('\lambda')
+% subplot(2,2,2)
+% fplot(lda2,[0 time2(end)])
+% xlabel('t(s)')
+% ylabel('\lambda')
+% subplot(2,2,3)
+% fplot(lda3,[0 time3(end)])
+% xlabel('t(s)')
+% ylabel('\lambda')
+% subplot(2,2,4)
+% fplot(lda4,[0 time4(end)])
+% xlabel('t(s)')
+% ylabel('\lambda')
+%%
+
+binit           =       2.012747764451281; % initial concentration pameter (30 % parallel)
+%binit           =       2.323129668541721; % initial concentration pameter (90 % parallel)  
+
+kphat           =       @(g33) interp1(khat(:,1),khat(:,2),g33,'spline');
+
+kbar            =       @(g33) interp1(kbardata(:,1),kbardata(:,2),g33,'spline');
+
+funfterm1       =       @(th,g33,l,b,mu1,mu2) (3/4).*b.^(1/2).*exp(1).^(2.*b.*cos(th).^2.*(cos(th).^2+ ...
+  g33.^3.*sin(th).^2).^(-1)).*((-1)+exp(1).^(g33.^(-4).*l.^( ...
+  -2).*mu2.*(l.^3.*cos(th).^2+(-1/2).*g33.^2.*((-1).*g33+2.*l+ ...
+  g33.*cos(2.*th))).^2)).*g33.^2.*mu1.*mu2.^(-1).*(2.*pi).^( ...
+  -1/2).*erfi(2.^(1/2).*b.^(1/2)).^(-1).*sin(th).*(cos(th).^2+ ...
+  g33.^3.*sin(th).^2).^(-7/2).*(8.*cos(th).^4+(-4).*g33.^6.* ...
+  sin(th).^4+(1+(-4).*b).*g33.^3.*sin(2.*th).^2);
+
+
+
+funsterm1       =       @(th,g33,l,b,mu1,mu2) (-1/2).*b.^(1/2).*exp(1).^(g33.^(-4).*l.^(-2).*mu2.*(l.^3.* ...
+  cos(th).^2+(-1/2).*g33.^2.*((-1).*g33+2.*l+g33.*cos(2.*th))) ...
+  .^2+2.*b.*cos(th).^2.*(cos(th).^2+g33.^3.*sin(th).^2).^(-1)) ...
+  .*g33.^(-2).*(g33+(-1).*l).*l.^(-2).*mu1.*(2.*pi).^(-1/2).*( ...
+  (-1).*g33.^2+g33.*l+l.^2+(g33.^2+g33.*l+l.^2).*cos(2.*th)).* ...
+  ((-1).*g33.^3+2.*l.^3+(g33.^3+2.*l.^3).*cos(2.*th)).*erfi( ...
+  2.^(1/2).*b.^(1/2)).^(-1).*sin(th).*(cos(th).^2+g33.^3.*sin( ...
+  th).^2).^(-3/2);
+
+
+
+
+
+ftermbar1       =       @(g33,l,b,mu1,mu2) integral(@(th) 2*pi*funfterm1(th,g33,l,b,mu1,mu2),0,pi,'ArrayValued',true);
+
+stermbar1       =       @(g33,l,b,mu1,mu2) integral(@(th) 2*pi*funsterm1(th,g33,l,b,mu1,mu2),0,pi,'ArrayValued',true);
+
+%% solving ode
+
+y0              =       1;
+sol1            =       ode15s(@(t,y) evol(t,y,binit,parameters1,lda1,kbar,kphat,ftermbar1,stermbar1),[0,time1(end)],y0);
+sol2            =       ode15s(@(t,y) evol(t,y,binit,parameters2,lda2,kbar,kphat,ftermbar1,stermbar1),[0,time2(end)],y0);
+%sol3            =       ode15s(@(t,y) evol(t,y,binit,parameters3,lda3,kbar,kphat,ftermbar1,stermbar1),[0,time3(end)],y0);
+%sol4            =       ode15s(@(t,y) evol(t,y,binit,parameters4,lda4,kbar,kphat,ftermbar1,stermbar1),[0,time4(end)],y0);
+
+
+%% Plotting
+% figure()
+% plot(time3,deval(sol3,time3))
+% figure()
+% plot(time4,deval(sol4,time4))
+
+%% Piola_Kirchoff Stress
+
+TAI_integrand   =       @(th,g33,l,b,mu1,mu2) 4.*b.^(1/2).*exp(1).^(2.*b.*cos(th).^2.*(cos(th).^2+g33.^3.* ...
+  sin(th).^2).^(-1)+g33.^(-4).*l.^(-2).*mu2.*((-1).*g33.^2.*l+ ...
+  l.^3.*cos(th).^2+g33.^3.*sin(th).^2).^2).*g33.^(-1).*l.^(-2) ...
+  .*mu1.*(2.*pi).^(1/2).*erfi(2.^(1/2).*b.^(1/2)).^(-1).*sin( ...
+  th).*(2.*l.^3.*cos(th).^2+(-1).*g33.^3.*sin(th).^2).*(cos( ...
+  th).^2+g33.^3.*sin(th).^2).^(-3/2).*((-1).*g33.^2.*l+l.^3.* ...
+  cos(th).^2+g33.^3.*sin(th).^2);
+
+
+
+
+TAI             =       @(g33,l,b,mu1,mu2) integral(@(th) TAI_integrand(th,g33,l,b,mu1,mu2),0,pi,'ArrayValued',true);
+
+PK1             =       @(t) lda1(t).^(-1).*TAI(deval(sol1,t),lda1(t),binit,mu11,mu2)+(-1).* ...
+  deval(sol1,t).*lda1(t).^(-2).*mu0+deval(sol1,t).^(-2).*lda1(t).*mu0;
+PK2             =       @(t) lda2(t).^(-1).*TAI(deval(sol2,t),lda2(t),binit,mu12,mu2)+(-1).* ...
+  deval(sol2,t).*lda2(t).^(-2).*mu0+deval(sol2,t).^(-2).*lda2(t).*mu0;
+PK3             =       @(t) lda3(t).^(-1).*TAI(deval(sol3,t),lda3(t),binit,mu1,mu2)+(-1).* ...
+  deval(sol3,t).*lda3(t).^(-2).*mu0+deval(sol3,t).^(-2).*lda3(t).*mu0;
+PK4             =       @(t) lda4(t).^(-1).*TAI(deval(sol4,t),lda4(t),binit,mu1,mu2)+(-1).* ...
+  deval(sol4,t).*lda4(t).^(-2).*mu0+deval(sol4,t).^(-2).*lda4(t).*mu0;
+%% Optimization
+% weighted root mean square
+% mv              =   [max(per3010(:,2)),max(per301(:,2)),max(per3001(:,2)),max(per30001(:,2))];
+% 
+% w1=(1-(max(per3010(:,2))/sum(mv)))*(1/3);
+% w2=(1-(max(per301(:,2))/sum(mv)))*(1/3);
+% w3=(1-(max(per3001(:,2))/sum(mv)))*(1/3);
+% w4=(1-(max(per30001(:,2))/sum(mv)))*(1/3);
+% obj = w1*rms(per3010(:,2),PK1(time1')')+w2*rms(per301(:,2),PK2(time2')')+w3*rms(per3001(:,2),PK3(time3')')+w4*rms(per30001(:,2),PK4(time4')');
+
+% least square error
+% obj1=(1/length(time1))*sum((per3010(:,2)-PK1(time1')').^2);
+% obj2=(1/length(time2))*sum((per301(:,2)-PK2(time2')').^2);
+% obj3=(1/length(time3))*sum((per3001(:,2)-PK3(time3')').^2);
+% obj4=(1/length(time4))*sum((per30001(:,2)-PK4(time4')').^2);
+% obj=obj1+obj2+obj3+obj4;
+
+% Normalized Mean Absolute Difference (NMAD)
+  obj1= nmad(per3010(:,2),PK1(time1')');
+  obj2= nmad(per301(:,2),PK2(time2')');
+% obj3= nmad(per3001(:,2),PK3(time3')');
+% obj4= nmad(per30001(:,2),PK4(time4')');
+  obj=obj1+obj2;
+
+ 
+% Mean Squared Difference
+
+ % obj1= msd(per3010(:,2),PK1(time1')');
+ % obj2= msd(per301(:,2),PK2(time2')');
+ % obj3= msd(per3001(:,2),PK3(time3')');
+ % obj4= msd(per30001(:,2),PK4(time4')');
+ % 
+ % obj=obj1+obj2+obj3+obj4;
+% Relative Error
+ % obj1= re(per3010(:,2),PK1(time1')');
+ % obj2= re(per301(:,2),PK2(time2')');
+ % obj3= re(per3001(:,2),PK3(time3')');
+ % obj4= re(per30001(:,2),PK4(time4')');
+ % 
+ % obj=obj1+obj2+obj3+obj4;
+% % 
+obj_value=obj
+
+par_values=x
+
+end

@@ -1,0 +1,23 @@
+function lse =  PK_evaluate(x,t)
+mu0     =   x(1);
+mu1     =   x(2);
+mu2     =   x(3);
+b0      =   x(4);
+b2      =   x(5);
+b3      =   x(6);
+
+TAI_integrand   =       @(th,ph,g33,l,b,mu1,mu2) 4.*l.^(-2).*b.^(1/2).*exp(1).^(2.*b.*cos(th).^2.*(cos(th) ...
+  .^2+g33.^3.*sin(th).^2).^(-1)+l.^(-2).*g33.^(-4).*mu2.*( ...
+  l.^3.*cos(ph).^2+g33.^2.*((-1).*l+g33.*sin(th).^2)).^2).* ...
+  g33.^(-1).*mu1.*(2.*pi.^(-1)).^(1/2).*cos(ph).^2.*erfi(2.^( ...
+  1/2).*b.^(1/2)).^(-1).*sin(th).*(l.^3+(-1).*g33.^3.*sin(th) ...
+  .^2).*(cos(th).^2+g33.^3.*sin(th).^2).^(-3/2).*(l.^3.*cos( ...
+  ph).^2+g33.^2.*((-1).*l+g33.*sin(th).^2));
+
+TAI             =       @(g33,l,b,mu1,mu2) integral2(@(th,ph) TAI_integrand(th,ph,g33,l,b,mu1,mu2),0,pi,0,2*pi);
+
+
+PK1             =       @(t) lda1(t).^(-1).*TAI(deval(sol1,t),lda1(t),binit,mu1,mu2)+(-1).* ...
+  deval(sol1,t).*lda1(t).^(-2).*mu0+deval(sol1,t).^(-2).*lda1(t).*mu0;
+
+end

@@ -1,0 +1,21 @@
+function dydt=evol(t,y,binit,parameters,lda1,kbar,kphat,ftermbar1,stermbar1)
+mu1         =   parameters(1);
+mu2         =   parameters(2);
+b0          =   parameters(3);
+b1          =   parameters(4);
+b2          =   parameters(5);
+
+arr         =   [y,lda1(t),binit,mu1,mu2]
+
+firstterm   =   ftermbar1(y,lda1(t),binit,mu1,mu2)
+
+secondterm  =   stermbar1(y,lda1(t),binit,mu1,mu2)
+
+dydt        = (-2).*y.^2.*(3.*b0+b1+12.*b2.*y.^2.*kbar(y).^2+(-6).*b1.* ...
+  kphat(y)+9.*b1.*kphat(y).^2).^(-1).*(ftermbar1(y,lda1(t), ...
+  binit,mu1,mu2)+(-1).*stermbar1(y,lda1(t),binit,mu1,mu2));
+
+
+
+
+end

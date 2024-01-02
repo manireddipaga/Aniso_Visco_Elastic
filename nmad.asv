@@ -1,0 +1,7 @@
+%% Error Measures
+
+% Normalized mean absolute difference
+e is the vector of experimental stress values (or if strain control, the vector of experimental strain values)
+function res=nmad(a,b)
+res=100*mean(abs(a-b))./max([mean(abs(a)),mean(abs(b))]);
+end
